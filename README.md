@@ -28,7 +28,7 @@ User Question → API Route → [Opportunity Data + Question] → Gemini → Res
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/YOUR_USERNAME/foras-assistant.git
+git clone https://github.com/OkbaBk9/foras-khadraa-rag.git
 cd foras-assistant
 ```
 
