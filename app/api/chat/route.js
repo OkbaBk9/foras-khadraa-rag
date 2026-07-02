@@ -1,7 +1,7 @@
-import { GoogleGenAI } from "@google/genai";
+import Groq from "groq-sdk";
 import opportunities from "../../data/opportunities";
 
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
 function buildContext() {
   return opportunities
@@ -34,31 +34,27 @@ export async function POST(request) {
       return Response.json({ error: "Messages are required" }, { status: 400 });
     }
 
-    const chatHistory = messages.slice(0, -1).map((msg) => ({
-      role: msg.role === "user" ? "user" : "model",
-      parts: [{ text: msg.content }],
-    }));
+    // Format messages for Groq API
+    const formattedMessages = [
+      { role: "system", content: SYSTEM_PROMPT },
+      ...messages.map(msg => ({
+        role: msg.role === "user" ? "user" : "assistant",
+        content: msg.content
+      }))
+    ];
 
-    const lastMessage = messages[messages.length - 1].content;
-
-    const response = await ai.models.generateContent({
-      model: "gemini-2.0-flash",
-      contents: [
-        ...chatHistory,
-        { role: "user", parts: [{ text: lastMessage }] },
-      ],
-      config: {
-        systemInstruction: SYSTEM_PROMPT,
-        temperature: 0.7,
-        maxOutputTokens: 1024,
-      },
+    const response = await groq.chat.completions.create({
+      messages: formattedMessages,
+      model: "llama3-8b-8192", // Fast and free Llama 3 model
+      temperature: 0.7,
+      max_tokens: 1024,
     });
 
-    const text = response.text;
+    const text = response.choices[0]?.message?.content || "";
 
     return Response.json({ message: text });
   } catch (error) {
-    console.error("Gemini API error:", error);
+    console.error("Groq API error:", error);
     return Response.json(
       { error: "حدث خطأ في معالجة طلبك. تأكد من صحة مفتاح API." },
       { status: 500 }
