@@ -45,7 +45,7 @@ export async function POST(request) {
 
     const response = await groq.chat.completions.create({
       messages: formattedMessages,
-      model: "llama3-8b-8192", // Fast and free Llama 3 model
+      model: "llama-3.1-8b-instant", // Fast and free Llama 3.1 model
       temperature: 0.7,
       max_tokens: 1024,
     });
